@@ -1,5 +1,5 @@
 ############################################################################
-# arch/z80/src/Makefile
+# apps-or-nuttx-Make.defs
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -18,46 +18,19 @@
 #
 ############################################################################
 
-# Makefile fragments
+-include $(TOPDIR)/.config
+# CONFIG_APPS_DIR can be over-ridden from the command line or in the .config file.
+# The default value of CONFIG_APPS_DIR is ../apps.  Ultimately, the application
+# will be built if APPDIR is defined.  APPDIR will be defined if a directory containing
+# a Makefile is found at the path provided by CONFIG_APPS_DIR
 
-include $(TOPDIR)/tools/apps-or-nuttx-Make.defs
-include chip/Make.defs
+ifeq ($(CONFIG_APPS_DIR),)
+CONFIG_APPS_DIR = $(TOPDIR)/../apps
+endif
+APPDIR := $(realpath ${shell if [ -r $(CONFIG_APPS_DIR)/Makefile ]; then echo "$(CONFIG_APPS_DIR)"; fi})
 
-# Compiler-Dependent Make:  SDCC, Clang, or ZiLOG ZDS-II
-
-COMPILER = ${shell basename "$(CC)"}
-ifeq ($(patsubst %-clang,clang,$(COMPILER)),clang)
-
-    include Makefile.clang
-
-else ifeq ($(COMPILER),sdcc)
-
-  # Check for SDCC native windows build
-
-  ifeq ($(CONFIG_WINDOWS_NATIVE),y)
-
-    # SDCC Windows native build
-
-    include Makefile.sdccw
-  else
-
-    # SDCC in a POSIX environment (Linux, macOS, or Cygwin/MSYS)
-
-    include Makefile.sdccl
-  endif
+ifeq ($(APPDIR),)
+include $(TOPDIR)/Make.defs
 else
-
-  # Check for ZDSII native windows build
-
-  ifeq ($(CONFIG_WINDOWS_NATIVE),y)
-
-    # ZDSII Windows native build
-
-    include Makefile.zdsiiw
-  else
-
-    # ZDSII in a POSIX environment (Cygwin/MSYS)
-
-    include Makefile.zdsiil
-  endif
+include $(APPDIR)/Make.defs
 endif
