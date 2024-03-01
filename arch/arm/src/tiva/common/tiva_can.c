@@ -468,6 +468,12 @@ static int tivacan_setup(struct can_dev_s *dev)
     .bt_tseg1    = 6,
     .bt_tseg2    = 3,
     .bt_sjw      = 3,
+
+    .bt_baud  = 500000,
+    .bt_tseg1    = 2,
+    .bt_tseg2    = 2,
+    .bt_sjw      = 1,
+
   };
 
   /* Clear the status interrupt, just in case */
