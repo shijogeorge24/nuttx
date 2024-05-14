@@ -22,11 +22,52 @@
  * Included Files
  ****************************************************************************/
 
-#include <nuttx/config.h>
+
+
+
+
+
 
 #include <syslog.h>
 
 #include "tm4c123g-launchpad.h"
+
+#include <nuttx/config.h>
+
+#include <stdio.h>
+#include <stdint.h>
+#include <debug.h>
+
+#include <nuttx/i2c/i2c_master.h>
+#include <nuttx/sensors/bmi160.h>
+#include <nuttx/sensors/bmp280.h>
+#include <nuttx/sensors/mpu60x0.h>
+#include <nuttx/sensors/qencoder.h>
+#include <nuttx/sensors/as5048b.h>
+#include <arch/board/board.h>
+#include <nuttx/fs/fs.h>
+
+#include <nuttx/timers/pwm.h>
+
+#ifdef CONFIG_INPUT_BUTTONS
+#  include <nuttx/input/buttons.h>
+#endif
+
+#include "tiva_i2c.h"
+#include <nuttx/serial/serial.h>
+#include<nuttx/can/can.h>
+#include <nuttx/ioexpander/gpio.h>
+
+#include</home/astrekdev1/nuttxspace/nuttx/arch/arm/src/tiva/tm4c/tm4c_gpio.h>
+
+
+#ifdef HAVE_USERLED_DRIVER
+#  include <nuttx/leds/userled.h>
+#endif
+
+
+#define BOARD_NGPIOOUT 1
+#define BOARD_NGPIOIN 1
 
 /****************************************************************************
  * Pre-processor Definitions
@@ -51,12 +92,33 @@ int tm4c_bringup(void)
 #ifdef CONFIG_TIVA_ADC
   /* Initialize ADC and register the ADC driver. */
 
+
+
+
   ret = tm4c_adc_setup();
   if (ret < 0)
     {
       syslog(LOG_ERR, "ERROR: tm4c_adc_setup failed: %d\n", ret);
     }
 #endif
+
+
+#ifdef CONFIG_DEV_GPIO
+ret =tm4c_dev_gpio_init();
+printf("entering gpio\n");
+//sninfo("entering to register gpio\n");
+
+  if (ret < 0)
+    {
+      syslog(LOG_ERR, "ERROR: gpio setup failed: %d\n", ret);
+
+      printf("error register gpio\n");
+    }
+#endif
+
+
+
+
 
 #ifdef CONFIG_TIVA_CAN
   /* Initialize CAN module and register the CAN driver(s) */
