@@ -639,6 +639,8 @@ int tiva_gpioirqattach(pinconfig_t pinconfig, xcpt_t isr, void *arg)
   irqstate_t flags;
   uint8_t    port  = (pinconfig & GPIO_PORT_MASK) >> GPIO_PORT_SHIFT;
   uint8_t    pinno = (pinconfig & GPIO_PIN_MASK);
+  
+
 
   /* Assign per-pin interrupt handlers */
 
@@ -654,6 +656,8 @@ int tiva_gpioirqattach(pinconfig_t pinconfig, xcpt_t isr, void *arg)
       gpioinfo("assign port=%d pin=%d function=%p to idx=%d\n",
                port, pinno, isr, TIVA_GPIO_IRQ_IDX(port, pinno));
 
+     
+
       handler = &g_gpioportirqvector[TIVA_GPIO_IRQ_IDX(port, pinno)];
       if (isr == NULL)
         {
@@ -665,6 +669,7 @@ int tiva_gpioirqattach(pinconfig_t pinconfig, xcpt_t isr, void *arg)
         {
           handler->isr = isr;
           handler->arg = arg;
+        
           tiva_gpioirqenable(pinconfig);
         }
 

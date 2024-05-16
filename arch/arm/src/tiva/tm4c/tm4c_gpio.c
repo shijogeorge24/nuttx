@@ -600,6 +600,10 @@ static inline void tiva_initoutput(pinconfig_t pinconfig)
  ****************************************************************************/
 
 #ifdef CONFIG_TIVA_GPIO_IRQS
+
+
+
+
 static inline void tiva_interrupt(pinconfig_t pinconfig)
 {
   uint8_t   port    = (pinconfig & GPIO_PORT_MASK) >> GPIO_PORT_SHIFT;
@@ -710,6 +714,15 @@ static inline void tiva_interrupt(pinconfig_t pinconfig)
   regval = (getreg32(base + TIVA_GPIO_IEV_OFFSET) & pin) ? pin : 0;
   gpioinfo("IEV 0x%08x 0x%08x\n", ievset, regval);
 #endif
+}
+
+
+
+
+void tiva_enable_irq(pinconfig_t pinconfig)
+{
+  tiva_interrupt(pinconfig);
+
 }
 #endif
 

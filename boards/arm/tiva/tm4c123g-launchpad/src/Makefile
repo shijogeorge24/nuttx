@@ -26,6 +26,10 @@ ifeq ($(CONFIG_ARCH_LEDS),y)
 CSRCS += tm4c_autoleds.c
 endif
 
+ifeq ($(CONFIG_DEV_GPIO),y)
+CSRCS += tm4c_gpio.c
+endif
+
 ifeq ($(CONFIG_BOARDCTL),y)
 CSRCS += tm4c_appinit.c
 endif

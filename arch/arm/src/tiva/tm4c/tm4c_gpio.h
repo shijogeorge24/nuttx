@@ -28,6 +28,7 @@
 #include <nuttx/config.h>
 #include <arch/tiva/chip.h>
 
+
 /****************************************************************************
  * Pre-processor Definitions
  ****************************************************************************/
@@ -247,5 +248,12 @@ typedef uint32_t pinconfig_t;
  ****************************************************************************/
 
 uintptr_t tiva_gpiobaseaddress(unsigned int port);
+extern void tiva_enable_irq(pinconfig_t);
 
-#endif /* __ARCH_ARM_SRC_TIVA_TM4C_TM4C_GPIO_H */
+
+
+#endif /* __ARCH_ARM_SRC_TIVA_HARDWARE_TIVA_GPIO_H */
+
+//added by shijo 
+
+

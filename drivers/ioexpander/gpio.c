@@ -43,7 +43,7 @@
  * Private Function Prototypes
  ****************************************************************************/
 
-static int     gpio_handler(FAR struct gpio_dev_s *dev, uint8_t pin);
+ int gpio_handler(FAR struct gpio_dev_s *dev, uint8_t pin);
 static ssize_t gpio_read(FAR struct file *filep, FAR char *buffer,
                          size_t buflen);
 static ssize_t gpio_write(FAR struct file *filep, FAR const char *buffer,
@@ -78,25 +78,34 @@ static const struct file_operations g_gpio_drvrops =
  *
  ****************************************************************************/
 
-static int gpio_handler(FAR struct gpio_dev_s *dev, uint8_t pin)
+ int gpio_handler(FAR struct gpio_dev_s *dev, uint8_t pin)
 {
   int i;
+ 
+
+ _info("info hanlder: singal: valu:%d\n",(dev->gp_signals->gp_pid));
 
   DEBUGASSERT(dev != NULL);
 
   for (i = 0; i < CONFIG_DEV_GPIO_NSIGNALS; i++)
     {
-      FAR struct gpio_signal_s *signal = &dev->gp_signals[i];
+    //  _info("number of signal:%d\n",CONFIG_DEV_GPIO_NSIGNALS);
+   
+      FAR struct gpio_signal_s *signal =&dev->gp_signals[i];
+        //signal->gp_pid=2;
+       _info("process id=%d\n",signal->gp_pid);
+     
 
       if (signal->gp_pid == 0)
         {
+         
           break;
         }
 
       nxsig_notification(signal->gp_pid, &signal->gp_event,
                          SI_QUEUE, &signal->gp_work);
     }
-
+ _info("gpio interrupt call invoked\n");
   return OK;
 }
 
@@ -141,11 +150,13 @@ static ssize_t gpio_read(FAR struct file *filep, FAR char *buffer,
   /* Read the GPIO value */
 
   ret = dev->gp_ops->go_read(dev, (FAR bool *)&buffer[0]);
+  
   if (ret < 0)
     {
       return ret;
     }
 
+//printf("gpio read=%d\n",ret);
   /* Convert the GPIO value to ASCII and increment the file position */
 
   buffer[0]    += '0';
@@ -358,6 +369,7 @@ static int gpio_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
                     memcpy(&signal->gp_event, (FAR void *)arg,
                            sizeof(signal->gp_event));
                     signal->gp_pid = pid;
+                    _info("pid from the gpio=%d\n",pid);
                     ret = OK;
                     break;
                   }
@@ -372,6 +384,8 @@ static int gpio_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
                 DEBUGASSERT(dev->gp_ops->go_attach != NULL);
                 ret = dev->gp_ops->go_attach(dev,
                                              (pin_interrupt_t)gpio_handler);
+
+                _info("gpio call_back%p\n",gpio_handler) ;                            
                 if (ret >= 0)
                   {
                     /* Enable pin interrupts */
@@ -432,11 +446,13 @@ static int gpio_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
               {
                 /* Make sure that the pin interrupt is disabled */
 
+             
                 DEBUGASSERT(dev->gp_ops->go_enable != NULL);
                 ret = dev->gp_ops->go_enable(dev, false);
                 if (ret >= 0)
                   {
                     /* Detach the handler */
+                      
 
                     DEBUGASSERT(dev->gp_ops->go_attach != NULL);
                     ret = dev->gp_ops->go_attach(dev, NULL);
@@ -562,6 +578,7 @@ int gpio_pin_register(FAR struct gpio_dev_s *dev, int minor)
 {
   char devname[16];
 
+ //minor=(minor&GPIO_PORT_MASK)
   snprintf(devname, sizeof(devname), "gpio%u", (unsigned int)minor);
   return gpio_pin_register_byname(dev, devname);
 }

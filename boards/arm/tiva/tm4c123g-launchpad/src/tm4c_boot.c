@@ -90,6 +90,8 @@ void board_late_initialize(void)
 {
   /* Perform board initialization */
 
+ // printf("starting boot\n");
+
   tm4c_bringup();
 }
 #endif /* CONFIG_BOARD_LATE_INITIALIZE */

@@ -39,7 +39,7 @@
 
 #include "arm_internal.h"
  #include <arch/tiva/chip.h>
-
+ //#include</home/astrekdev1/nuttxspace/nuttx/arch/arm/src/tiva/tm4c/tm4c_gpio.h>
  #include<tiva_gpio.h>
 
 //#include "tm4c_gpio.h"
@@ -52,8 +52,11 @@
 #define GPIO_OUT1  (GPIO_FUNC_OUTPUT|GPIO_PORTA|GPIO_PIN_2)
 //#define GPIO_OUT2  (GPIO_FUNC_OUTPUT | GPIO_PORTF | GPIO_PIN_4)
 #define GPIO_IN1 (GPIO_PORTF|GPIO_PIN_4)
-#define GPIO_IRQPIN1 (GPIO_FUNC_INTERRUPT|GPIO_FUNC_INPUT|GPIO_PORTF|GPIO_PIN_4|GPIO_INT_MASK |GPIO_INT_RISINGEDGE)
+#define GPIO_IRQPIN1 (GPIO_FUNC_INTERRUPT|GPIO_FUNC_INPUT|GPIO_PORTF|GPIO_PIN_4|GPIO_INT_MASK|GPIO_INT_RISINGEDGE)
 
+
+//GPIO_INT_FALLINGEDGE
+//GPIO_INT_RISINGEDGE
 /* Input pins.
  */
 
@@ -80,7 +83,7 @@ struct tm4cgpio_dev_s
 struct tm4cgpint_dev_s
 {
   struct tm4cgpio_dev_s tm4cgpio;
-  pin_interrupt_t callback;
+   pin_interrupt_t callback;
 };
 
 /****************************************************************************
@@ -222,7 +225,7 @@ static int gpin_read(struct gpio_dev_s *dev, bool *value)
 
  *value =  tiva_gpioread(g_gpioinputs[tm4cgpio->id]);
 
- printf("gpio pin value=%d\n",*value);
+ _info("gpio pin value=%d\n",*value);
   return OK;
 }
 #endif
@@ -232,27 +235,24 @@ static int gpin_read(struct gpio_dev_s *dev, bool *value)
  ****************************************************************************/
 
 #if BOARD_NGPIOINT > 0
-static int tm4cgpio_interrupt(int irq, void *context, void *arg)
-{
-  struct tm4cgpint_dev_s *tm4cgpint =
-    (struct tm4cgpint_dev_s *)arg;
+// static int tm4cgpio_interrupt(int irq, void *context, void *arg)
+// {
+//   struct tm4cgpint_dev_s *tm4cgpint =
+//     (struct tm4cgpint_dev_s *)arg;
 
-//gpioinfo("Interrupt! id=%x\n",tm4cgpint->tm4cgpio.id);
 
-//printf("call back=%p\n",tm4cgpint->callback);
+//   DEBUGASSERT(tm4cgpint != NULL && tm4cgpint->callback != NULL);
 
-  DEBUGASSERT(tm4cgpint != NULL && tm4cgpint->callback != NULL);
-  printf("Interrupt! callback=%p\n", tm4cgpint->callback);
+//  //  irq=g_gpiointinputs[tm4cgpint->tm4cgpio.id] ;
 
-if(tm4cgpint->callback != NULL)
-{
-  tm4cgpint->callback(&tm4cgpint->tm4cgpio.gpio,
-                       tm4cgpint->tm4cgpio.id);
-}
 
-  printf("call back done\n");
-  return OK;
-}
+//   _info("Interrupt! callback=%p\n", tm4cgpint->callback);
+
+//   tm4cgpint->callback(&tm4cgpint->tm4cgpio.gpio,tm4cgpint->tm4cgpio.id);
+
+//   _info("call back done\n");
+//   return OK;
+// }
 
 /****************************************************************************
  * Name: gpint_read
@@ -275,34 +275,103 @@ static int gpint_read(struct gpio_dev_s *dev, bool *value)
  * Name: gpint_attach
  ****************************************************************************/
 
+
+
+
+// int gpint_attach(int id, xcpt_t irqhandler, void *arg)
+// {
+//   uint32_t pinset = 0;
+//   int ret;
+
+//   /* Determine which switch to set the irq handler for */
+
+//   switch (id)
+//     {
+//       case BUTTON_SW1:
+//         pinset = GPIO_SW1;
+//         break;
+
+//       case BUTTON_SW2:
+//         pinset = GPIO_SW2;
+//         break;
+
+//       default:
+//         return -EINVAL;
+//     }
+
+//     /* Are we attaching or detaching? */
+
+//     if (irqhandler != NULL)
+//       {
+//         ret = tiva_gpioirqattach(pinset, irqhandler, arg);
+//       }
+//     else
+//       {
+//         ret = tiva_gpioirqdetach(pinset);
+//       }
+
+//   return ret;
+// }
+
+
+
+
 static int gpint_attach(struct gpio_dev_s *dev,
                         pin_interrupt_t callback)
 {
   struct tm4cgpint_dev_s *tm4cgpint =
     (struct tm4cgpint_dev_s *)dev;
+
+struct tm4cgpio_dev_s *arguments;
+
+
+ // uint32_t time_out = 0;
+  //uint8_t gpio_pin;
+
   int irq = g_gpiointinputs[tm4cgpint->tm4cgpio.id];
   int ret;
 
   gpioinfo("Attaching the callback\n");
 
   /* Make sure the interrupt is disabled */
-   tiva_gpioirqdisable(irq);
+ //gpioinfo("Attach %p\n", callback);
 
-  //tm4c_gpio_disable_irq(irq);
 
-   printf("isr vlaue=%p\n",(g_gpint[tm4cgpint->tm4cgpio.id].callback));
 
-  ret = tiva_gpioirqattach(irq,tm4cgpio_interrupt,&g_gpint[tm4cgpint->tm4cgpio.id]);
+    _info("non zero\n");
+//tm4cgpint->callback = callback;
+//&(g_gpint[tm4cgpint->tm4cgpio.id])
+
+ int pxds=dev->gp_signals->gp_pid;
+
+ _info("pid from attach=%d\n",pxds);
+
+arguments->gpio=tm4cgpint->tm4cgpio.gpio;
+arguments->id=irq;
+tiva_gpioirqdisable(irq);
+if (callback != NULL)
+      {
+        ret = tiva_gpioirqattach(irq,callback,arguments);
+      }
+    else
+      {
+        ret = tiva_gpioirqdetach(irq);
+      }
+
+
+
+   //   ret = tiva_gpioirqattach(irq,tm4cgpio_interrupt,&(g_gpint[tm4cgpint->tm4cgpio.id]));
+
   if (ret < 0)
     {
       syslog(LOG_ERR, "ERROR: gpint_attach() failed: %d\n", ret);
       return ret;
     }
+  gpioinfo("Attach %p\n", callback);
+     // 
 
+  tiva_gpioirqenable(irq);
 
-
-   gpioinfo("Attach %p\n", callback);
-  tm4cgpint->callback = callback;
 
   return OK;
 }
@@ -330,6 +399,7 @@ static int gpint_enable(struct gpio_dev_s *dev, bool enable)
           /* Configure the interrupt for rising edge */
 
           /// tiva_enable_irq(irq);
+          tiva_gpioirqinitialize();
 
           tiva_gpioirqenable(irq);
 
@@ -345,21 +415,18 @@ static int gpint_enable(struct gpio_dev_s *dev, bool enable)
     {
       gpioinfo("Disable the interrupt\n");
 
-printf("remove interrupt attach\n");   
-  ret = tiva_gpioirqattach(irq,NULL,&g_gpint[tm4cgpint->tm4cgpio.id]);
-  if (ret < 0)
-    {
-      syslog(LOG_ERR, "ERROR: gpint_attach() failed: %d\n", ret);
-      return ret;
-    }
+_info("remove interrupt attach\n");   
+ret = tiva_gpioirqattach(irq,NULL,&g_gpint[tm4cgpint->tm4cgpio.id]);
+if (ret < 0)
+{
+syslog(LOG_ERR, "ERROR: gpint_attach() failed: %d\n", ret);
+return ret;
+}
 
-printf("remove interrupt \n"); 
-    
+_info("remove interrupt \n"); 
 
-
-      tiva_gpioirqdisable(irq);
-
-           tiva_gpioirqclear(irq);
+tiva_gpioirqdisable(irq);
+tiva_gpioirqclear(irq);
  // tiva_gpioirqclear(pinconfig);
      // tm4c_gpio_disable_irq(irq);
     }
@@ -383,7 +450,7 @@ int tm4c_dev_gpio_init(void)
  // printf("gpio pi  value=%x",GPIO_OUT1);
   int i;
   int pincount = 0;
- 
+ _info("hello world\n");
 
 #if BOARD_NGPIOOUT > 0
   for (i = 0; i < BOARD_NGPIOOUT; i++)

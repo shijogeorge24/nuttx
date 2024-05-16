@@ -67,8 +67,14 @@ elseif(CONFIG_ARCH_CHIP_CC13X2)
 endif()
 
 if(CONFIG_DEBUG_GPIO_INFO)
+  list(APPEND SRCS tm4cgpio.c)
+endif()
+
+
+if(CONFIG_DEV_GPIO)
   list(APPEND SRCS tiva_dumpgpio.c)
 endif()
+
 
 if(NOT CONFIG_SCHED_TICKLESS)
   list(APPEND SRCS tiva_timerisr.c)
