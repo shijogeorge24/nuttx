@@ -1,5 +1,5 @@
 /****************************************************************************
- * arch/arm64/src/common/arm64_task_sched.c
+ * boards/risc-v/esp32c6/common/src/esp_board_wlan.c
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,61 +21,61 @@
 /****************************************************************************
  * Included Files
  ****************************************************************************/
+
 #include <nuttx/config.h>
 
-#include <stdbool.h>
-#include <sched.h>
+#include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <syslog.h>
 #include <debug.h>
-#include <assert.h>
-#include <nuttx/arch.h>
-#include <nuttx/sched.h>
-#include <arch/syscall.h>
 
-#include "sched/sched.h"
-#include "group/group.h"
-#include "arm64_internal.h"
-#include "arm64_fatal.h"
+#include <nuttx/wireless/wireless.h>
 
-#ifdef CONFIG_ARCH_FPU
-#include "arm64_fpu.h"
-#endif
+#include "espressif/esp_wlan.h"
 
 /****************************************************************************
  * Public Functions
  ****************************************************************************/
 
 /****************************************************************************
- * Name: arm64_fullcontextrestore
+ * Name: board_wlan_init
  *
  * Description:
- *   Restore the current thread context.  Full prototype is:
+ *   Configure the wireless subsystem.
  *
- *   void arm64_fullcontextrestore(uint64_t *restoreregs) noreturn_function;
+ * Input Parameters:
+ *   None.
  *
  * Returned Value:
- *   None
+ *   Zero (OK) is returned on success; A negated errno value is returned
+ *   to indicate the nature of any failure.
  *
  ****************************************************************************/
 
-void arm64_fullcontextrestore(uint64_t *restoreregs)
+int board_wlan_init(void)
 {
-  sys_call1(SYS_restore_context, (uintptr_t)restoreregs);
+  int ret = OK;
 
-  __builtin_unreachable();
+#ifdef ESP_WLAN_HAS_STA
+  ret = esp_wlan_sta_initialize();
+  if (ret)
+    {
+      wlerr("ERROR: Failed to initialize Wi-Fi station\n");
+      return ret;
+    }
+#endif /* ESP_WLAN_HAS_STA */
+
+#ifdef ESP_WLAN_HAS_SOFTAP
+  ret = esp_wlan_softap_initialize();
+  if (ret)
+    {
+      wlerr("ERROR: Failed to initialize Wi-Fi softAP\n");
+      return ret;
+    }
+#endif /* ESP_WLAN_HAS_SOFTAP */
+
+  return ret;
 }
 
-/****************************************************************************
- * Name: arm64_switchcontext
- *
- * Description:
- *   Save the current thread context and restore the specified context.
- *
- * Returned Value:
- *   None
- *
- ****************************************************************************/
-
-void arm64_switchcontext(uint64_t **saveregs, uint64_t *restoreregs)
-{
-  sys_call2(SYS_switch_context, (uintptr_t)saveregs, (uintptr_t)restoreregs);
-}
