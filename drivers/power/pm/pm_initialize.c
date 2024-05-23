@@ -89,11 +89,17 @@ void pm_initialize(void)
       gov = pm_greedy_governor_initialize();
 #elif defined(CONFIG_PM_GOVERNOR_ACTIVITY)
       gov = pm_activity_governor_initialize();
+#elif defined(CONFIG_PM_GOVERNOR_STABILITY)
+      gov = pm_stability_governor_initialize();
 #else
       static struct pm_governor_s null;
       gov = &null;
 #endif
       pm_set_governor(i, gov);
+
+#if defined(CONFIG_PM_PROCFS)
+      clock_systime_timespec(&g_pmglobals.domain[i].start);
+#endif
 
       nxrmutex_init(&g_pmglobals.domain[i].lock);
 

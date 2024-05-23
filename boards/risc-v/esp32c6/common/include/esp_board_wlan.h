@@ -1,5 +1,5 @@
 /****************************************************************************
- * arch/arm/src/samv7/sam_lowputc.h
+ * boards/risc-v/esp32c6/common/include/esp_board_wlan.h
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,40 +18,20 @@
  *
  ****************************************************************************/
 
-#ifndef __ARCH_ARM_SRC_SAMV7_SAM_LOWPUTC_H
-#define __ARCH_ARM_SRC_SAMV7_SAM_LOWPUTC_H
+#ifndef __BOARDS_RISCV_ESP32C6_COMMON_INCLUDE_ESP_BOARD_WLAN_H
+#define __BOARDS_RISCV_ESP32C6_COMMON_INCLUDE_ESP_BOARD_WLAN_H
 
 /****************************************************************************
  * Included Files
  ****************************************************************************/
 
 #include <nuttx/config.h>
-#include <nuttx/compiler.h>
-
-#include <sys/types.h>
-#include <stdint.h>
-#include <stdbool.h>
-
-#include "arm_internal.h"
-#include "chip.h"
 
 /****************************************************************************
  * Pre-processor Definitions
  ****************************************************************************/
 
-/****************************************************************************
- * Public Types
- ****************************************************************************/
-
-/****************************************************************************
- * Inline Functions
- ****************************************************************************/
-
 #ifndef __ASSEMBLY__
-
-/****************************************************************************
- * Public Data
- ****************************************************************************/
 
 #undef EXTERN
 #if defined(__cplusplus)
@@ -66,31 +46,23 @@ extern "C"
  * Public Function Prototypes
  ****************************************************************************/
 
+#ifdef CONFIG_ESPRESSIF_WIFI
+
 /****************************************************************************
- * Name: sam_lowsetup
+ * Name: board_wlan_init
  *
  * Description:
- *   Called at the very beginning of _start.
- *   Performs low level initialization including setup of the console UART.
- *   This UART done early so that the serial console is available for
- *   debugging very early in the boot sequence.
+ *   Configure the wireless subsystem.
+ *
+ * Returned Value:
+ *   Zero (OK) is returned on success; A negated errno value is returned
+ *   to indicate the nature of any failure.
  *
  ****************************************************************************/
 
-void sam_lowsetup(void);
+int board_wlan_init(void);
 
-/****************************************************************************
- * Name: sam_boardinitialize
- *
- * Description:
- *   All SAMV7 architectures must provide the following entry point.  This
- *   entry point is called early in the initialization -- after all memory
- *   has been configured and mapped but before any devices have been
- *   initialized.
- *
- ****************************************************************************/
-
-void sam_boardinitialize(void);
+#endif /* CONFIG_ESPRESSIF_WIFI */
 
 #undef EXTERN
 #if defined(__cplusplus)
@@ -98,4 +70,4 @@ void sam_boardinitialize(void);
 #endif
 
 #endif /* __ASSEMBLY__ */
-#endif /* __ARCH_ARM_SRC_SAMV7_SAM_LOWPUTC_H */
+#endif /* __BOARDS_RISCV_ESP32C6_COMMON_INCLUDE_ESP_BOARD_WLAN_H */

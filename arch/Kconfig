@@ -107,7 +107,6 @@ config ARCH_SIM
 	select ARCH_HAVE_TICKLESS
 	select ARCH_HAVE_POWEROFF
 	select ARCH_HAVE_TESTSET
-	select ARCH_HAVE_FORK if !HOST_WINDOWS
 	select ARCH_HAVE_SETJMP
 	select ARCH_HAVE_CUSTOMOPT
 	select ARCH_HAVE_TCBINFO
@@ -430,6 +429,18 @@ config ARCH_HAVE_TEXT_HEAP
 	default n
 	---help---
 		Special memory region for dynamic code loading
+
+config ARCH_HAVE_TEXT_HEAP_SEPARATE_DATA_ADDRESS
+	bool
+	default n
+	---help---
+		Textheap might have separate instruction/data mappings
+
+config ARCH_HAVE_TEXT_HEAP_WORD_ALIGNED_READ
+	bool
+	default n
+	---help---
+		Loads from the instruction mapping of textheap need to be word-aligned
 
 config ARCH_HAVE_DATA_HEAP
 	bool
